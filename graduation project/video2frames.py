@@ -36,7 +36,7 @@ def video2frames():
                         call(["ffmpeg","-i",src,dest])
                     i+=1
                     video_frames=get_frames_for_video(video_class,filename_no_ext)
-                    print('tatally %d videos have been extracted'%(i))
+                    print('totally %d videos have been extracted'%(i))
                     data_file.append([purpose,classname,filename_no_ext,video_frames])
                     print(filename_no_ext+'   frames   ')
                     print(video_frames)
