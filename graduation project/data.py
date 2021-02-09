@@ -10,6 +10,7 @@ class Dataset():
         self.seq_length = seq_length
 
         self.data = self.get_data()
+        self.data = self.remove_redundant_data()
         self.train_data = self.get_train_data()
         self.val_data = self.get_val_data()
         self.test_data = self.get_test_data()
@@ -21,6 +22,13 @@ class Dataset():
             reader = csv.reader(fin)
             data = list(reader)
         return data
+
+    def remove_redundant_data(self):
+        rest_data=[]
+        for item in self.data:
+            if int(item[3])>=self.seq_length:
+                rest_data.append(item)
+        return rest_data
 
     def get_train_data(self):
         train_data = []
@@ -86,4 +94,3 @@ class Dataset():
         while 1:
             for _ in range(batch_size):
                 sample=random.choice(data)
-data=Dataset(40)
