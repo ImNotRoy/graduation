@@ -85,12 +85,26 @@ class Dataset():
         output=[input_list[i] for i in range(0,len(input_list),skip)]
         return output[:size]
     
-    def frame_generator(self,batch_size,purpose):
-        if purpose=='train':
-            data=self.train_data
-        else:
-            data=self.val_data
-        print("Creating %s generator with %d samples."%(purpose,len(data)))
-        while 1:
-            for _ in range(batch_size):
-                sample=random.choice(data)
+    def get_rnn_input(self):
+        x_train=[]
+        y_train=[]
+        x_test=[]
+        y_test=[]
+
+        for item in self.train_data:
+            label=self.return_label(item[1])
+            y_train.append(label)
+            x=np.load(os.path.join('data','features',item[2]+'-features.npy'))
+            x_train.append((x))
+
+        for item in self.val_data:
+            label=self.return_label(item[1])
+            y_test.append(label)
+            x=np.load(os.path.join('data','features',item[2]+'-features.npy'))
+            x_test.append((x))
+
+        x_train = np.asarray(x_train)
+        x_test = np.asarray(x_test)
+        y_train = np.asarray(y_train).astype('float32')
+        y_test = np.asarray(y_test).astype('float32')
+        return x_train,y_train,x_test,y_test

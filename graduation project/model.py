@@ -1,66 +1,27 @@
-from tensorflow.keras import layers
-from tensorflow.keras import models
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
+from data import Dataset
+from keras.layers import LSTM,Dense,Dropout
+from keras.models import Sequential
+from keras import optimizers
+
 import tensorflow as tf
+config=tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
+sess=tf.compat.v1.Session(config=config)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
-config = tf.compat.v1.ConfigProto(gpu_options=gpu_options)
-session = tf.compat.v1.Session(config=config)
+seq_length=60
+data=Dataset(seq_length)
+x_train,y_train,x_test,y_test=data.get_rnn_input()
+simples=len(data.val_data)+len(data.train_data)
 
-base_dir = 'D:\毕设\graduation project\data'
-train_dir = os.path.join(base_dir, 'train')
-validation_dir = os.path.join(base_dir, 'validation')
-test_dir = os.path.join(base_dir, 'test')
+model=Sequential()
+model.add(LSTM(2048,input_shape=(seq_length,2048) ))
 
-model = models.Sequential()
-model.add(layers.Conv2D(32, (3, 3), activation='relu',
-                        input_shape=(150, 150, 3)))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(128, (3, 3), activation='relu'))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Flatten())
-model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dense(1, activation='sigmoid'))
-model.summary()
-from tensorflow.keras import optimizers
-
-model.compile(loss='binary_crossentropy',
-              optimizer=optimizers.RMSprop(lr=1e-4),
+model.add(Dense(1,activation='sigmoid'))
+model.compile(optimizer=optimizers.RMSprop(),
+              loss='binary_crossentropy',
               metrics=['acc'])
 
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+history=model.fit(x_train,y_train,batch_size=128,epochs=20,validation_data=(x_test,y_test))
 
-train_datagen = ImageDataGenerator(rescale=1. / 255)
-test_datagen = ImageDataGenerator(rescale=1. / 255)
-
-train_generator = train_datagen.flow_from_directory(
-    # This is the target directory
-    train_dir,
-    # All images will be resized to 150x150
-    target_size=(150,150),
-    batch_size=20,
-    # Since we use binary_crossentropy loss, we need binary labels
-    class_mode='binary')
-
-validation_generator = test_datagen.flow_from_directory(
-    validation_dir,
-    target_size=(150, 150),
-    batch_size=20,
-    class_mode='binary')
-
-for data_batch, labels_batch in train_generator:
-    print('data batch shape:', data_batch.shape)
-    print('labels batch shape:', labels_batch.shape)
-    break
-
-history = model.fit(
-    train_generator,
-    steps_per_epoch=100,
-    epochs=60,
-    validation_data=validation_generator,
-    validation_steps=50)

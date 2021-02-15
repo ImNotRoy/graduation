@@ -7,7 +7,7 @@ from tqdm import tqdm
 from data import Dataset
 from CNN_extractor import CNN_Extractor
 
-seq_length=60
+seq_length=5
 data=Dataset(seq_length)
 cnn_model=CNN_Extractor()
 bar=tqdm(total=len(data.data))
